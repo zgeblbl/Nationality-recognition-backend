@@ -51,7 +51,11 @@ def predict():
             prediction = model(input_tensor)
             predicted_class = torch.argmax(prediction, dim=1).item()
 
-        return jsonify({'prediction': predicted_class})
+            # make mapping {'Arabic': 0, 'Chinese': 1, 'Czech': 2, 'Dutch': 3, 'English': 4, 'French': 5, 'German': 6, 'Honduran': 7, 'Italian': 8, 'Japanese': 9, 'Mexican': 10, 'Russian': 11, 'Spanish': 12, 'Türk': 13}
+            print(predicted_class)
+            mapping = {0: 'Arabic', 1: 'Chinese', 2: 'Czech', 3: 'Dutch', 4: 'English', 5: 'French', 6: 'German', 7: 'Honduran', 8: 'Italian', 9: 'Japanese', 10: 'Mexican', 11: 'Russian', 12: 'Spanish', 13: 'Türk'}
+
+        return jsonify({'prediction': mapping[predicted_class]})
 
     except Exception as e:
         return jsonify({'error': str(e)})
