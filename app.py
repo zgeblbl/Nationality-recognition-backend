@@ -12,7 +12,7 @@ CORS(app)  # Enable CORS for all routes
 
 # Load the pre-trained ResNet model
 model = models.resnet18(weights=None)  # Use weights=None as 'pretrained' is deprecated
-model.fc = nn.Linear(in_features=model.fc.in_features, out_features=5)
+model.fc = nn.Linear(in_features=model.fc.in_features, out_features=13)
 
 # Load the state dict
 checkpoint = torch.load('model_epoch_41.pth', map_location=torch.device('cpu'))
