@@ -8,6 +8,8 @@ import torch.nn as nn
 from torchvision import models, transforms
 from collections import Counter
 import logging
+import cv2
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
@@ -44,13 +46,36 @@ transform = transforms.Compose([
 def predict():
     try:
         data = request.get_json()
-        images = data['images']  # Expecting a list of base64 image strings
+        images = data.get('images', [])  # Expecting a list of base64 image strings
         
+        if not images:
+            return jsonify({'prediction': 'No face detected'})
+
         predictions = []
         
+        no_face_count = 0
+
         for image_data in images:
             image_data = image_data.split(",")[1]
             image = Image.open(io.BytesIO(base64.b64decode(image_data))).convert('RGB')
+            open_cv_image = np.array(image) 
+            open_cv_image = open_cv_image[:, :, ::-1].copy() 
+
+            # Convert to grayscale
+            gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+            face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+            
+            
+            
+            if len(faces) == 0:
+                no_face_count += 1
+                print("No face detected")
+            
+            if no_face_count == 5:
+                return jsonify({'prediction': 'No face detected'})
+
             input_tensor = transform(image).unsqueeze(0)
 
             with torch.no_grad():
@@ -64,7 +89,8 @@ def predict():
                    10: 'Mexican', 11: 'Russian', 12: 'Spanish', 13: 'Türk'}
 
         # Find the most common prediction
-        print(predictions)
+        if len(predictions) == 0:
+            return jsonify({'prediction': 'Try Again'})
         most_common_prediction = Counter(predictions).most_common(1)[0][0]
         result = mapping.get(most_common_prediction, 'Unknown')
 
