@@ -1,4 +1,6 @@
 Flask
+Flask-CORS
 torch
 torchvision
 Pillow
+opencv-python
